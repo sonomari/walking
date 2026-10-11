@@ -389,6 +389,12 @@ function renderSet(){
   '<div class="card"><h2>始めた日（歩き旅の出発日）</h2>'+(S.start?'<div class="setrow"><button onclick="chg(\'start\',-1)" aria-label="前の日">◀</button><div style="font-size:24px">'+jdate(S.start)+'</div><button onclick="chg(\'start\',1)" aria-label="次の日">▶</button></div>':'<p class="sub">まだ始まっていません</p>')+
     '<p class="sub">達成の◎・連続日数・お休みチケット・歩き旅は、この日から数えます。</p>'+
     '<button class="btn warn" onclick="restart()">今日、日本橋から出発しなおす</button></div>'+
+  '<div class="card"><h2>記録の控え</h2>'+
+    '<p class="sub">記録と設定を1つのファイルにして、iPhoneの「ファイル」やLINEに保存できます。月に1回ほど取っておくと安心です。</p>'+
+    '<p>前回の控え：<b>'+(S.lastBackup?jdate(S.lastBackup):'まだ取っていません')+'</b></p>'+
+    '<button class="btn" onclick="saveCopy()">💾 控えを取る</button>'+
+    '<button class="btn ghost" onclick="document.getElementById(\'rf\').click()">控えのファイルから戻す</button>'+
+    '<input type="file" id="rf" style="display:none" onchange="restore(this)"></div>'+
   '<div class="card"><h2>見本</h2><button class="btn ghost" onclick="startDemo();go(\'home\')">見本のデータで画面を見る</button></div>';
 }
 function chg(k,n){
@@ -397,6 +403,35 @@ function chg(k,n){
   if(k==='stride')S.stride=Math.min(90,Math.max(40,S.stride+n));
   if(k==='start'&&S.start){const d=ymd(add(parse(S.start),n));if(d<=today()){S.start=d;S.station=trip().g}}
   save();renderSet();
+}
+// ---------- 記録の控え ----------
+function saveCopy(){
+  if(demo){alert('見本の表示中は控えを取れません。「見本を終わる」を押してからお試しください。');return}
+  const name='ウォーキング控え-'+today()+'.txt';
+  const file=new File([JSON.stringify(Object.assign({},S,{lastBackup:today()}))],name,{type:'text/plain'});
+  const done=()=>{S.lastBackup=today();save();renderSet()};
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file]}).then(done).catch(()=>{});
+  }else{
+    const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();done();
+  }
+}
+function restore(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    let d=null;
+    try{d=JSON.parse(r.result);if(!d||typeof d.days!=='object'||!Array.isArray(d.goals))d=null}catch(e){d=null}
+    if(!d)alert('このファイルは、控えのファイルではないようです。');
+    else if(confirm('控えのファイルから記録を戻します（'+Object.keys(d.days).length+'日分）。よろしいですか？')){
+      if(demo)endDemo(true);
+      // 設定は控えのものに戻す。歩数は、控えの分に今ある分を重ねる（同じ日は今ある方を使う）
+      S=Object.assign(fresh(),d,{days:Object.assign({},d.days,S.days)});save();go('home');
+      alert('記録を戻しました。');
+    }
+    inp.value='';
+  };
+  r.readAsText(f);
 }
 function restart(){if(confirm('歩き旅を、今日 日本橋から出発しなおします。よろしいですか？')){S.start=today();S.station=0;save();renderSet()}}
 
