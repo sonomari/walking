@@ -452,8 +452,10 @@ function fanfareURL(){
 }
 function fanfare(){
   try{
-    const a=fanfare.el||(fanfare.el=new Audio(fanfareURL()));
-    a.currentTime=0;const p=a.play();if(p&&p.catch)p.catch(()=>{});
+    // 毎回新しく作る（ボタンを押す前に再生に失敗した音声を使い回すと、iPhoneで鳴らなくなるため）
+    if(fanfare.el){try{fanfare.el.pause()}catch(e){}}
+    const a=fanfare.el=new Audio(fanfareURL());
+    const p=a.play();if(p&&p.catch)p.catch(()=>{});
   }catch(e){}
 }
 function confetti(){
@@ -476,7 +478,7 @@ function celebrate(again,arrived){
   h+='<button class="btn" onclick="fanfare();confetti()">🎺 ファンファーレを鳴らす</button><button class="btn ghost" onclick="closeCele()">とじる</button>';
   document.getElementById('celebox').innerHTML=h;
   document.getElementById('cele').classList.add('on');
-  confetti();fanfare();
+  confetti();if(again)fanfare(); // 音はボタンを押したときだけ鳴らす（iPhoneは操作なしでは音を出せない）
 }
 function closeCele(){document.getElementById('cele').classList.remove('on')}
 function checkCelebrate(){
