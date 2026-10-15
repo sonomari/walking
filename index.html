@@ -165,7 +165,7 @@ const TOTAL=CUM[CUM.length-1];
 
 // ---------- 保存データ ----------
 const KEY='walk-keizoku-v1';
-const DEF={goals:[{from:'2000-01-01',goal:2000}],tickets:2,stride:48,start:null,days:{},celebrated:'',station:0};
+const DEF={goals:[{from:'2000-01-01',goal:2000}],tickets:2,stride:65,start:null,days:{},celebrated:'',station:0};
 const fresh=()=>JSON.parse(JSON.stringify(DEF));
 let S=load(), demo=false, backup=null, range=14, picked=null, repMonth=null;
 function load(){try{return Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return fresh()}}
