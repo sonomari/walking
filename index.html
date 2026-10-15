@@ -340,6 +340,7 @@ function renderTrip(){
     '<div class="sub">日本橋から歩いた距離'+(T.lap?'（'+(T.lap+1)+'周目）':'')+'</div><div class="big">'+T.pos.toFixed(1)+' km</div>'+
     '<div class="bar"><i style="width:'+Math.max(2,100*T.pos/TOTAL)+'%"></i></div>'+
     '<p class="sub">京都 三条大橋まで あと '+(TOTAL-T.pos).toFixed(1)+' km<br>出発から '+days+' 日目 ／ 合計 '+fmt(T.steps)+' 歩</p></div>'+
+    (T.i>0||T.lap?'<button class="btn" style="margin:0 0 16px" onclick="celebrate(true,'+T.i+')">🎉 '+ROAD[T.i][0]+' 到着のお祝いを見る</button>':'')+
     '<div class="card"><ul class="road">'+li+'</ul><p class="sub">宿場の間の距離は、おおよその値です。</p></div>';
 }
 
@@ -401,7 +402,7 @@ function chg(k,n){
   if(k==='goal')setGoal(Math.min(20000,Math.max(500,goalOn(today())+n)));
   if(k==='tickets')S.tickets=Math.min(5,Math.max(0,S.tickets+n));
   if(k==='stride')S.stride=Math.min(90,Math.max(40,S.stride+n));
-  if(k==='start'&&S.start){const d=ymd(add(parse(S.start),n));if(d<=today()){S.start=d;S.station=trip().g}}
+  if(k==='start'&&S.start){const d=ymd(add(parse(S.start),n));if(d<=today()){S.start=d;S.station=Math.min(S.station,trip().g)}}
   save();renderSet();
 }
 // ---------- 記録の控え ----------
