@@ -219,6 +219,7 @@ function takeHash(){
   while((m=re.exec(h))){const k=m[1]+'-'+p2(m[2])+'-'+p2(m[3]);got[k]=(got[k]||0)+Math.round(parseFloat(m[4].replace(/,/g,'')))}
   if(Object.keys(got).length){
     if(demo)endDemo(true);
+    S=load(); // 他のタブで保存された最新の記録を読み直してから足す
     Object.assign(S.days,got);
     if(!S.start)S.start=today();
     save();
@@ -437,27 +438,28 @@ function restore(inp){
 function restart(){if(confirm('歩き旅を、今日 日本橋から出発しなおします。よろしいですか？')){S.start=today();S.station=0;save();renderSet()}}
 
 // ---------- お祝い ----------
-// iPhoneは消音スイッチが入っているとWeb Audioの音が出ないため、音声ファイル(WAV)を作って再生する
-function fanfareURL(){
-  if(fanfare.url)return fanfare.url;
-  const sr=22050,len=Math.floor(sr*2.3),d=new Float32Array(len);
-  [[523,0,.16],[659,.16,.16],[784,.32,.16],[1047,.48,.5],[784,.48,.5],[659,.48,.5],[1319,1.0,.7],[1047,1.0,.7],[784,1.0,.7]].forEach(n=>{
-    const a=Math.floor(n[1]*sr),dur=n[2]+.3,cnt=Math.floor(dur*sr);
-    for(let i=0;i<cnt&&a+i<len;i++){const t=i/sr,ph=n[0]*t,tri=2*Math.abs(2*(ph-Math.floor(ph+.5)))-1;
-      d[a+i]+=tri*.28*Math.min(1,t/.02)*Math.exp(-4*t/dur)}});
-  const buf=new ArrayBuffer(44+len*2),v=new DataView(buf),w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
-  w(0,'RIFF');v.setUint32(4,36+len*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
-  v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,len*2,true);
-  for(let i=0;i<len;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,d[i]))*32767,true);
-  return fanfare.url=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+// 音は fanfare.wav（index.html と同じ場所に置く音声ファイル）を再生する。
+// 音声ファイルの再生は、iPhoneの消音スイッチが入っていても鳴る。
+// ファイルが鳴らせなかったときは、Web Audio で同じ音を作って鳴らす（こちらは消音スイッチ中は鳴らない）。
+const NOTES=[[523,0,.16],[659,.16,.16],[784,.32,.16],[1047,.48,.5],[784,.48,.5],[659,.48,.5],[1319,1.0,.7],[1047,1.0,.7],[784,1.0,.7]];
+function fanfareWA(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext,ac=new AC();ac.resume();
+    const t0=ac.currentTime+0.05;
+    NOTES.forEach(n=>{
+      const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.value=n[0];
+      g.gain.setValueAtTime(0,t0+n[1]);g.gain.linearRampToValueAtTime(.22,t0+n[1]+.02);g.gain.exponentialRampToValueAtTime(.001,t0+n[1]+n[2]+.25);
+      o.connect(g).connect(ac.destination);o.start(t0+n[1]);o.stop(t0+n[1]+n[2]+.3)});
+    setTimeout(()=>{try{ac.close()}catch(e){}},3000);
+  }catch(e){}
 }
 function fanfare(){
   try{
-    // 毎回新しく作る（ボタンを押す前に再生に失敗した音声を使い回すと、iPhoneで鳴らなくなるため）
-    if(fanfare.el){try{fanfare.el.pause()}catch(e){}}
-    const a=fanfare.el=new Audio(fanfareURL());
-    const p=a.play();if(p&&p.catch)p.catch(()=>{});
-  }catch(e){}
+    // 毎回新しく作る（前に再生に失敗した音声を使い回すと、iPhoneで鳴らなくなるため）
+    if(fanfare.el){try{fanfare.el.pause();fanfare.el.removeAttribute('src');fanfare.el.load()}catch(e){}}
+    const a=fanfare.el=new Audio('fanfare.wav');
+    const p=a.play();if(p&&p.catch)p.catch(fanfareWA);
+  }catch(e){fanfareWA()}
 }
 function confetti(){
   const cv=document.querySelector('#cele canvas'),cx=cv.getContext('2d');
@@ -502,7 +504,8 @@ function go(t){
 }
 function render(){R[cur]()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.t));
-addEventListener('hashchange',()=>{takeHash();go('home');checkCelebrate()});
+// ショートカットから開き直したときは、歩数を保存してからページを読み込み直す（音などの状態を毎回まっさらにするため）
+addEventListener('hashchange',()=>{takeHash();location.reload()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 takeHash();if(!demo){render();checkCelebrate()}
 </script>
