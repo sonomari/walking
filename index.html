@@ -93,15 +93,16 @@ td.r{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 .stat span{display:block;font-size:16px;color:var(--sub)}
 .stat b{font-size:28px;font-variant-numeric:tabular-nums}
 .stat small{font-size:16px;font-weight:700}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-top:8px} /* minmax(0,…)：歩数の数字が長くても列が広がって枠からはみ出さないように */
 .cal .h{text-align:center;font-size:15px;color:var(--sub);font-weight:700}
-.cal .c{border:1px solid var(--line);border-radius:8px;min-height:62px;padding:2px;text-align:center;font-size:14px;background:#fff}
+.cal .c{border:1px solid var(--line);border-radius:8px;min-height:62px;padding:2px 1px;min-width:0;overflow:hidden;text-align:center;font-size:14px;background:#fff}
 .cal .c b{display:block;font-size:15px}
-.cal .c em{display:block;font-style:normal;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
+.cal .c em{display:block;font-style:normal;font-size:min(12px,2.9vw);letter-spacing:-.03em;white-space:nowrap;color:var(--sub);font-variant-numeric:tabular-nums}
 .cal .c.ok{background:var(--ok-soft);border-color:var(--ok)}
 .cal .c.rest{background:var(--rest-soft);border-color:var(--rest)}
 .cal .c .m{font-size:17px;font-weight:800;line-height:1.1;min-height:19px}
 .cal .c.ok .m{color:#0F5B38}
+.card:has(.cal){padding-left:10px;padding-right:10px}
 
 /* 設定 */
 .setrow{display:flex;align-items:center;gap:10px;margin-top:8px}
