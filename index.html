@@ -41,17 +41,17 @@ nav button span{display:block;font-size:28px;line-height:1.2}
 nav button.on{color:var(--ok);box-shadow:inset 0 4px 0 var(--ok)}
 
 /* きょう */
-.ring{position:relative;width:min(78vw,300px);margin:6px auto 4px}
+.ring{position:relative;width:min(78vw,300px);margin:6px auto 4px;container-type:inline-size} /* 中の数字を輪の大きさに合わせるため */
 .ring svg{display:block;width:100%}
 .ring .in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.steps{font-size:60px;font-weight:800;line-height:1.1}
+.steps{font-size:44px;font-size:16cqw;font-weight:800;line-height:1.1}
 .badge{display:inline-block;background:var(--ok);color:#fff;border-radius:999px;padding:4px 18px;font-weight:700;font-size:20px;margin-top:6px}
 .streak{font-size:26px;font-weight:800;color:var(--fire)}
 .streak b{font-size:52px}
-.week{display:flex;justify-content:space-between;gap:4px;margin-top:10px}
-.week div{flex:1;text-align:center;font-size:16px;color:var(--sub)}
-.dot{width:40px;height:40px;border-radius:50%;margin:4px auto 0;display:flex;align-items:center;justify-content:center;
-  font-size:20px;font-weight:800;border:2px solid var(--line);background:#fff;color:var(--sub)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px} /* 7日分を必ず枠の幅に収める */
+.week>div{min-width:0;text-align:center;font-size:16px;color:var(--sub)}
+.dot{width:100%;max-width:40px;aspect-ratio:1;box-sizing:border-box;border-radius:50%;margin:4px auto 0;display:flex;align-items:center;justify-content:center;
+  font-size:min(20px,5vw);line-height:1;overflow:hidden;font-weight:800;border:2px solid var(--line);background:#fff;color:var(--sub)}
 .dot.ok{background:var(--ok);border-color:var(--ok);color:#fff}
 .dot.rest{background:var(--rest-soft);border-color:var(--rest);color:#7A4A06}
 .dot.today{border-color:var(--ok);border-style:dashed}
